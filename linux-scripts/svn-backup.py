@@ -44,6 +44,19 @@ def send_mail(fromaddr,toaddr,msg):
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
+
+def verify_repo(dirlist):
+    for dir in dirlist:
+        print "Test %s to be a valid repository" % dir
+        p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out = p.communicate()
+        # print p.returncode
+        if p.returncode == 1:
+            dirlist.remove(dir)
+            print "La directory %s non e un repo e viene rimossa" % dir
+        elif p.returncode == 0:
+            print "OK: %s is a valid svn repo" % dir
+    return dirlist    
     
 def main():
     """Main script"""
@@ -69,3 +82,5 @@ def main():
             
     print "\n"
     print "Testing directory..."
+    
+    repolist=verify_repo(dirlist)
