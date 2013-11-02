@@ -84,3 +84,18 @@ def main():
     print "Testing directory..."
     
     repolist=verify_repo(dirlist)
+    
+    print "\n"
+    print "Starting backup procedure..."
+    print "\n"
+
+    #IS the destination directory mounted?
+    if os.path.ismount(localdir) == False:
+        print "Mounting backup destination directory..."
+        # Mount the destination directory
+        p = subprocess.Popen(['mount', '-t', 'cifs', remotedir, localdir, '-o', 'username=svn,password=svn'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out = p.communicate()
+        if p.returncode == 0:
+            print "Directory %s successfully mounted in %s" % remotedir, localdir
+    else:
+       print "Directory already mounted"
