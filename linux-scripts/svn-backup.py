@@ -55,14 +55,17 @@ def main():
         sys.exit(1)
     # Read the path
     path = sys.argv[1]
-    print "SVN main directory is " + path + "\n"
-    # Test if it's really a path
+    # Test if it's a valid path
     if os.path.exists(path) == False:
         print "Path doesn't exist"
         sys.exit(2)
+    print "Looking for SVN repo in %s\n" % path
         # Read all subdirs
     for dirname in os.listdir(path):
         tmpdir=os.path.join(path,dirname)
         if os.path.isdir(tmpdir) == True:
             dirlist.append(tmpdir)
             print "Found a directory called " + dirname + " in" + path
+            
+    print "\n"
+    print "Testing directory..."
