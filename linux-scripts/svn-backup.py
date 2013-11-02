@@ -33,3 +33,14 @@ msg.attach(MIMEText(content, 'plain'))
 #Credenziali per GMAIL
 username = "ZZZ"
 password = "YYY"
+
+def send_mail(fromaddr,toaddr,msg):
+    """Invia il messaggio"""
+    server = smtplib.SMTP('smtp.gmail.com:587')
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(username,password)
+    text = msg.as_string()
+    server.sendmail(fromaddr, toaddr, text)
+    server.quit()
