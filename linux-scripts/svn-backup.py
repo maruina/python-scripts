@@ -53,7 +53,7 @@ def verify_repo(dirlist):
         # print p.returncode
         if p.returncode == 1:
             dirlist.remove(dir)
-            print "La directory %s non e un repo e viene rimossa" % dir
+            print "ERROR: %s is not a valid repository. Removing from list" % dir
         elif p.returncode == 0:
             print "OK: %s is a valid svn repo" % dir
     return dirlist    
