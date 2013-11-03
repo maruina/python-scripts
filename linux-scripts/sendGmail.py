@@ -10,23 +10,23 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 import datetime
 
-#Parametri per l'invio del messaggio
+#Parameters
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
 today=datetime.datetime.now()
 subject = "SVN Backup report of " + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
 content = "Backup avvenuto con successo\n"
 
-#Formatto il messaggio
+#Format messagge
 msg = MIMEMultipart()
 msg['From'] = fromaddr
 msg['To'] = toaddr
 msg['Subject'] = subject
 msg.attach(MIMEText(content, 'plain'))
 
-#Credenziali per GMAIL
-username = "AAA"
-password = "BBB"
+#GMAIL credential
+username = "AAA_change_me"
+password = "BBB_change_me"
 
 def send_mail(fromaddr,toaddr,msg):
     """Invia il messaggio"""
