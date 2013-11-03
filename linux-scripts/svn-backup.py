@@ -137,9 +137,9 @@ def main():
     send_mail(fromaddr,toaddr,msg)
     print "Unmountig backup destination directory"
     p = subprocess.Popen(['umount', localdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out = p.communicate()
-        if p.returncode == 0:
-            print "%s successfully umounted" % localdir
+    out = p.communicate()
+    if p.returncode == 0:
+        print "%s successfully umounted" % localdir
     print "Backup procedure... COMPLETE"
     
         
