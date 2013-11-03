@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+#
+# Backup all SVN repo inside the given folder
+#
 
 # Import usefull stuff
 import smtplib
@@ -12,7 +15,7 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
 #Parametri per il backup
-remotedir="//192.168.1.101/SharedFolder/svn_backup"
+remotedir="//192.168.XXX.YYY/Somefolder/svn_backup"
 localdir="/mnt/svn/"
 today=datetime.datetime.now()
 localdirname=localdir + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
@@ -20,7 +23,7 @@ localdirname=localdir + str(today.year) + "-" + str(today.month) + "-" + str(tod
 #Parametri per l'invio del messaggio
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
-subject = "Finex SVN Backup"
+subject = "SVN Backup report of " + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
 content = "Messaggio di prova\n"
 
 #Formatto il messaggio
@@ -45,18 +48,17 @@ def send_mail(fromaddr,toaddr,msg):
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
 
-def verify_repo(dirlist):
-    for dir in dirlist:
-        print "Test %s to be a valid repository" % dir
-        p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out = p.communicate()
-        # print p.returncode
-        if p.returncode == 1:
-            dirlist.remove(dir)
-            print "ERROR: %s is not a valid repository. Removing from list" % dir
-        elif p.returncode == 0:
-            print "OK: %s is a valid svn repo" % dir
-    return dirlist    
+def verify_repo(dir):
+    ### Return TRUE if dir is a valid SVN repository
+    print "Test %s to be a valid repository" % dir
+    p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    out = p.communicate()
+    if p.returncode == 1:
+        print "ERROR: %s is not a valid SVN repository. Removing from list" % dir
+        return False
+    elif p.returncode == 0:
+        print "OK: %s is a valid SVN repository" % dir
+        return True    
     
 def main():
     """Main script"""
@@ -99,3 +101,29 @@ def main():
             print "Directory %s successfully mounted in %s" % remotedir, localdir
     else:
        print "Directory already mounted"
+
+    print "\n"
+    print "Creating backup directory"
+    if os.path.exists(localdirname):
+        print "Today backup already done"
+        sys.exit(3)
+    else:
+        os.makedirs(localdirname)
+        print "Creating directory %s ... OK\n" % localdirname
+
+    print "Starting backup...OK"
+
+    for x in list_repo:
+        localdirrepo = localdirname + "/" + os.path.basename(x)
+        if os.path.exists(localdirrepo):
+             print "Today backup for repo %s already done" % localdirrepo
+        else:
+             if os.makedirs(localdirrepo):
+                 print "Directory %s created" % localdirrepo
+        p = subprocess.Popen(['svnadmin', 'hotcopy', x, localdirrepo],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out = p.communicate()
+        #print p.returncode
+        if p.returncode == 0:
+            print "Backup of repo %s - DONE" % x
+        else:
+            print "ERROR while backup repo %s" % x
