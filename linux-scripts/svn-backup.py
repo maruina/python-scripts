@@ -50,8 +50,7 @@ def send_mail(fromaddr,toaddr,msg):
 
 def verify_repo(dir):
     ### Return TRUE if dir is a valid SVN repository
-    print "\n"
-    print "Test %s to be a valid repository" % dir
+    print "Testing %s directory" % dir
     p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     out = p.communicate()
     if p.returncode == 1:
@@ -70,9 +69,9 @@ def backup_repo(srcdir,destdir):
         p = subprocess.Popen(['svnadmin', 'hotcopy', srcdir, destdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         out = p.communicate()
         if p.returncode == 0:
-            print "Backup of repo %s - DONE" % x
+            print "Backup of repo %s - DONE" % srcdir
         else:
-            print "ERROR while backup repo %s" % x    
+            print "ERROR while backup repo %s" % srcdir 
     
 def main():
     """Main script"""
@@ -114,7 +113,7 @@ def main():
         p = subprocess.Popen(['mount', '-t', 'cifs', remotedir, localdir, '-o', 'username=svn,password=svn'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         out = p.communicate()
         if p.returncode == 0:
-            print "Backup destination direcotry %s successfully mounted in %s" % remotedir, localdir
+            print "Backup destination direcotry %s successfully mounted in %s" % (remotedir, localdir)
     else:
        print "Backup destination directory already mounted in %s" % localdir
 
@@ -136,6 +135,11 @@ def main():
         
     print "Sending report"
     send_mail(fromaddr,toaddr,msg)
+    print "Unmountig backup destination directory"
+    p = subprocess.Popen(['umount', localdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out = p.communicate()
+        if p.returncode == 0:
+            print "%s successfully umounted" % localdir
     print "Backup procedure... COMPLETE"
     
         
