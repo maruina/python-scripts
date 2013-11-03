@@ -24,7 +24,7 @@ localdirname=localdir + str(today.year) + "-" + str(today.month) + "-" + str(tod
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
 subject = "SVN Backup report of " + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
-content = "Messaggio di prova\n"
+content = "Backup avvenuto con successo\n"
 
 #Formatto il messaggio
 msg = MIMEMultipart()
@@ -134,7 +134,10 @@ def main():
         backup_repo(x,localdirrepo)
         verify_repo(localdirrepo)
         
-        
+    print "Sending report"
+    send_mail(fromaddr,toaddr,msg)
+    print "Backup procedure... COMPLETE"
+    
         
 if __name__ == '__main__':
     main()
