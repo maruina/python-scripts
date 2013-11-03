@@ -50,6 +50,7 @@ def send_mail(fromaddr,toaddr,msg):
 
 def verify_repo(dir):
     ### Return TRUE if dir is a valid SVN repository
+    print "\n"
     print "Test %s to be a valid repository" % dir
     p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     out = p.communicate()
@@ -58,7 +59,20 @@ def verify_repo(dir):
         return False
     elif p.returncode == 0:
         print "OK: %s is a valid SVN repository" % dir
-        return True    
+        return True
+
+def backup_repo(srcdir,destdir):
+    if os.path.exists(destdir):
+        print "Today backup for repo %s already done" % destdir
+    else:
+        if os.makedirs(destdir):
+            print "Directory %s created" % destdir
+        p = subprocess.Popen(['svnadmin', 'hotcopy', srcdir, destdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        out = p.communicate()
+        if p.returncode == 0:
+            print "Backup of repo %s - DONE" % x
+        else:
+            print "ERROR while backup repo %s" % x    
     
 def main():
     """Main script"""
@@ -72,9 +86,9 @@ def main():
     path = sys.argv[1]
     # Test if it's a valid path
     if os.path.exists(path) == False:
-        print "Path doesn't exist"
+        print "Path does not exist"
         sys.exit(2)
-    print "Looking for SVN repo in %s\n" % path
+    print "Looking for SVN repository in %s\n" % path
         # Read all subdirs
     for dirname in os.listdir(path):
         tmpdir=os.path.join(path,dirname)
@@ -85,22 +99,24 @@ def main():
     print "\n"
     print "Testing directory..."
     
-    repolist=verify_repo(dirlist)
+    for dir in dirlist:
+        if verify_repo(dir) == False:
+            dirlist.remove(dir)
     
     print "\n"
     print "Starting backup procedure..."
     print "\n"
 
-    #IS the destination directory mounted?
+    #Verify if the destination directory is mounted
     if os.path.ismount(localdir) == False:
         print "Mounting backup destination directory..."
         # Mount the destination directory
         p = subprocess.Popen(['mount', '-t', 'cifs', remotedir, localdir, '-o', 'username=svn,password=svn'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         out = p.communicate()
         if p.returncode == 0:
-            print "Directory %s successfully mounted in %s" % remotedir, localdir
+            print "Backup destination direcotry %s successfully mounted in %s" % remotedir, localdir
     else:
-       print "Directory already mounted"
+       print "Backup destination directory already mounted in %s" % localdir
 
     print "\n"
     print "Creating backup directory"
@@ -113,17 +129,12 @@ def main():
 
     print "Starting backup...OK"
 
-    for x in list_repo:
+    for x in dirlist:
         localdirrepo = localdirname + "/" + os.path.basename(x)
-        if os.path.exists(localdirrepo):
-             print "Today backup for repo %s already done" % localdirrepo
-        else:
-             if os.makedirs(localdirrepo):
-                 print "Directory %s created" % localdirrepo
-        p = subprocess.Popen(['svnadmin', 'hotcopy', x, localdirrepo],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out = p.communicate()
-        #print p.returncode
-        if p.returncode == 0:
-            print "Backup of repo %s - DONE" % x
-        else:
-            print "ERROR while backup repo %s" % x
+        backup_repo(x,localdirrepo)
+        verify_repo(localdirrepo)
+        
+        
+        
+if __name__ == '__main__':
+    main()
