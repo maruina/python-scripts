@@ -13,8 +13,11 @@ import datetime
 #Parameters
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
-today=datetime.datetime.now()
-subject = "SVN Backup report of " + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
+today = datetime.datetime.now()
+subject = (
+    "SVN Backup report of " + str(today.year) + "-" +
+    str(today.month) + "-" + str(today.day)
+)
 content = "Backup avvenuto con successo\n"
 
 #Format messagge
@@ -24,23 +27,26 @@ msg['To'] = toaddr
 msg['Subject'] = subject
 msg.attach(MIMEText(content, 'plain'))
 
-#GMAIL credential
+# GMAIL credential
 username = "AAA_change_me"
 password = "BBB_change_me"
 
-def send_mail(fromaddr,toaddr,msg):
+
+def send_mail(fromaddr, toaddr, msg):
     """Invia il messaggio"""
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
     server.starttls()
     server.ehlo()
-    server.login(username,password)
+    server.login(username, password)
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
-    
+
+
 def main():
-    send_mail(fromaddr,toaddr,msg)    
+    send_mail(fromaddr, toaddr, msg)
+
 
 if __name__ == '__main__':
     main()
