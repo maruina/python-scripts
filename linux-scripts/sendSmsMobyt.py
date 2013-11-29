@@ -3,7 +3,7 @@
 # Send a SMS via mobyt.it
 #
 
-#Import requested library library
+#Import requested library
 import urllib
 import urllib2
 #Import sys for exit code
@@ -16,7 +16,7 @@ mydata = {}
 
 
 def sendSmsMobyt(username, password, sender, recipient, text, quality):
-    """Send a SMS via www.mobyt.it
+    """Send a SMS via www.mobyt.it and POST method
 
     Arguments:
     username = your mobyt username
@@ -37,7 +37,7 @@ def sendSmsMobyt(username, password, sender, recipient, text, quality):
 
     #Check the SMS maximum lenght
     if len(text) > 160:
-        print "Error: mydata lenght exceeded (MAX 160)"
+        print "Error: SMS text too long (max 160)"
         sys.exit(1)
     else:
         mydata['data'] = text
@@ -47,6 +47,9 @@ def sendSmsMobyt(username, password, sender, recipient, text, quality):
         quality.lower() is 'l' or quality.lower() is 'll'
     ):
         mydata['qty'] = quality
+    else:
+        print "Error: wrong SMS quality (choose from n, h, l, ll)"
+        sys.exit(3)
 
     payload = urllib.urlencode(mydata)
     req = urllib2.Request(url, payload)
@@ -54,14 +57,14 @@ def sendSmsMobyt(username, password, sender, recipient, text, quality):
     try:
         response = urllib2.urlopen(req)
     except urllib2.URLError, e:
-        print "Can't connect to Mobyt: " + str(e.reason)
+        print "Error: can't connect to Mobyt " + str(e.reason)
         sys.exit(2)
     mobyt_code = response.read()
 
     if str(mobyt_code).find('OK') >= 0:
         print "SMS sent successfully"
     else:
-        print "ERROR. Mobyt says " + str(mobyt_code)
+        print "Error: Mobyt says " + str(mobyt_code)
 
 
 if __name__ == "__main__":
