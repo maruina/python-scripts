@@ -10,20 +10,25 @@ import sys
 import subprocess
 import datetime
 
-# Import the email modules we'll need
+# Import the email modules we need
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
 #Parametri per il backup
-remotedir="//192.168.XXX.YYY/Somefolder/svn_backup"
-localdir="/mnt/svn/"
-today=datetime.datetime.now()
-localdirname=localdir + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
+remotedir = "//192.168.XXX.YYY/SomeFolder/svn_backup"
+localdir = "/mnt/svn/"
+today = datetime.datetime.now()
+localdirname = (
+    localdir + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
+)
 
 #Parametri per l'invio del messaggio
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
-subject = "SVN Backup report of " + str(today.year) + "-" + str(today.month) + "-" + str(today.day)
+subject = (
+    "SVN Backup report of " + str(today.year) + "-" +
+    str(today.month) + "-" + str(today.day)
+)
 content = "Backup avvenuto con successo\n"
 
 #Formatto il messaggio
@@ -37,43 +42,59 @@ msg.attach(MIMEText(content, 'plain'))
 username = "ZZZ"
 password = "YYY"
 
-def send_mail(fromaddr,toaddr,msg):
+
+def send_mail(fromaddr, toaddr, msg):
     """Invia il messaggio"""
     server = smtplib.SMTP('smtp.gmail.com:587')
     server.ehlo()
     server.starttls()
     server.ehlo()
-    server.login(username,password)
+    server.login(username, password)
     text = msg.as_string()
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
 
+
 def verify_repo(dir):
     ### Return TRUE if dir is a valid SVN repository
     print "Testing %s directory" % dir
-    p = subprocess.Popen(['svnadmin','verify',dir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    out = p.communicate()
+    p = (
+        subprocess.Popen(
+            ['svnadmin', 'verify', dir], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+    )
     if p.returncode == 1:
-        print "ERROR: %s is not a valid SVN repository. Removing from list" % dir
+        print (
+            "ERROR: %s is not a valid SVN repository."
+            "Removing from list" % dir
+        )
         return False
     elif p.returncode == 0:
         print "OK: %s is a valid SVN repository" % dir
         return True
 
-def backup_repo(srcdir,destdir):
+
+def backup_repo(srcdir, destdir):
     if os.path.exists(destdir):
         print "Today backup for repo %s already done" % destdir
     else:
         if os.makedirs(destdir):
             print "Directory %s created" % destdir
-        p = subprocess.Popen(['svnadmin', 'hotcopy', srcdir, destdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out = p.communicate()
+        p = (
+            subprocess.Popen(
+                ['svnadmin', 'hotcopy', srcdir, destdir],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+        )
         if p.returncode == 0:
             print "Backup of repo %s - DONE" % srcdir
         else:
-            print "ERROR while backup repo %s" % srcdir 
-    
+            print "ERROR while backup repo %s" % srcdir
+
+
 def main():
+
     """Main script"""
     dirlist = []
     #Check of number of arguments
@@ -84,38 +105,46 @@ def main():
     # Read the path
     path = sys.argv[1]
     # Test if it's a valid path
-    if os.path.exists(path) == False:
+    if os.path.exists(path) is False:
         print "Path does not exist"
         sys.exit(2)
     print "Looking for SVN repository in %s\n" % path
         # Read all subdirs
     for dirname in os.listdir(path):
-        tmpdir=os.path.join(path,dirname)
-        if os.path.isdir(tmpdir) == True:
+        tmpdir = os.path.join(path, dirname)
+        if os.path.isdir(tmpdir) is True:
             dirlist.append(tmpdir)
             print "Found a directory called " + dirname + " in" + path
-            
+
     print "\n"
     print "Testing directory..."
-    
+
     for dir in dirlist:
-        if verify_repo(dir) == False:
+        if verify_repo(dir) is False:
             dirlist.remove(dir)
-    
+
     print "\n"
     print "Starting backup procedure..."
     print "\n"
 
     #Verify if the destination directory is mounted
-    if os.path.ismount(localdir) == False:
+    if os.path.ismount(localdir) is False:
         print "Mounting backup destination directory..."
         # Mount the destination directory
-        p = subprocess.Popen(['mount', '-t', 'cifs', remotedir, localdir, '-o', 'username=svn,password=svn'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        out = p.communicate()
+        p = (
+            subprocess.Popen(
+                ['mount', '-t', 'cifs', remotedir, localdir, '-o',
+                 'username=svn,password=svn'], stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        )
         if p.returncode == 0:
-            print "Backup destination direcotry %s successfully mounted in %s" % (remotedir, localdir)
+            print (
+                "Backup destination direcotry %s successfully mounted in"
+                "%s" % (remotedir, localdir)
+            )
     else:
-       print "Backup destination directory already mounted in %s" % localdir
+        print "Backup destination directory already mounted in %s" % localdir
 
     print "\n"
     print "Creating backup directory"
@@ -130,18 +159,19 @@ def main():
 
     for x in dirlist:
         localdirrepo = localdirname + "/" + os.path.basename(x)
-        backup_repo(x,localdirrepo)
+        backup_repo(x, localdirrepo)
         verify_repo(localdirrepo)
-        
+
     print "Sending report"
-    send_mail(fromaddr,toaddr,msg)
+    send_mail(fromaddr, toaddr, msg)
     print "Unmountig backup destination directory"
-    p = subprocess.Popen(['umount', localdir],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    out = p.communicate()
+    p = subprocess.Popen(
+        ['umount', localdir], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     if p.returncode == 0:
         print "%s successfully umounted" % localdir
     print "Backup procedure... COMPLETE"
-    
-        
+
+
 if __name__ == '__main__':
     main()
