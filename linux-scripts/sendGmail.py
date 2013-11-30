@@ -5,48 +5,53 @@
 
 # Import usefull stuff
 import smtplib
-# Import the email modules we'll need
+# Import the email modules we need
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
-import datetime
+# Import sys for exit codes
+import sys
 
-#Parameters
+# Parameters
 fromaddr = "notifiche@XXX.it"
 toaddr = "matteo.ruina@XXX.it"
-today = datetime.datetime.now()
-subject = (
-    "SVN Backup report of " + str(today.year) + "-" +
-    str(today.month) + "-" + str(today.day)
-)
-content = "Backup avvenuto con successo\n"
+subject = "My subject"
+content = "My beautiful email body"
 
-#Format messagge
-msg = MIMEMultipart()
-msg['From'] = fromaddr
-msg['To'] = toaddr
-msg['Subject'] = subject
-msg.attach(MIMEText(content, 'plain'))
 
 # GMAIL credential
 username = "AAA_change_me"
 password = "BBB_change_me"
+smtp_server = 'smtp.gmail.com:587'
 
 
-def send_mail(fromaddr, toaddr, msg):
+def checkEmailAddress(address):
+    if '@' not in address:
+        print "Error: @ missing in FROM email address"
+        sys.exit(1)
+
+
+def createMessagge(fromaddr, toaddr, subject):
+    # Format messagge
+    msg = MIMEMultipart()
+    msg['From'] = fromaddr
+    msg['To'] = toaddr
+    msg['Subject'] = subject
+    msg.attach(MIMEText(content, 'plain'))
+
+    return msg.as_string()
+
+
+def sendGmail(fromaddr, toaddr, msg, username, password, smtp_server):
     """Invia il messaggio"""
-    server = smtplib.SMTP('smtp.gmail.com:587')
+    server = smtplib.SMTP(smtp_server)
     server.ehlo()
     server.starttls()
     server.ehlo()
     server.login(username, password)
-    text = msg.as_string()
+    text = createMessagge(fromaddr, toaddr, subject)
     server.sendmail(fromaddr, toaddr, text)
     server.quit()
 
 
-def main():
-    send_mail(fromaddr, toaddr, msg)
-
-
 if __name__ == '__main__':
-    main()
+    print 'ciao'
