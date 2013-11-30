@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #
 # Send a SMS via mobyt.it
 #
@@ -6,17 +6,17 @@
 #Import requested library
 import urllib
 import urllib2
-#Import sys for exit code
+#Import sys for exit codes
 import sys
 
 #Url for Mobyt service
 url = 'http://smsweb.mobyt.it/sms-gw/sendsmart'
-#Request dictionary
+#Dictionary for storing request to Mobyt
 mydata = {}
 
 
 def sendSmsMobyt(username, password, sender, recipient, text, quality):
-    """Send a SMS via www.mobyt.it and POST method
+    """Send a SMS via www.mobyt.it using POST method
 
     Arguments:
     username = your mobyt username
@@ -32,28 +32,30 @@ def sendSmsMobyt(username, password, sender, recipient, text, quality):
     mydata['password'] = password
     mydata['from'] = sender
     mydata['rcpt'] = recipient
-    mydata['operation'] = "TEXT"
-    mydata['act'] = "1983"
+    mydata['operation'] = 'TEXT'
+    mydata['act'] = '1983'
 
     #Check the SMS maximum lenght
     if len(text) > 160:
-        print "Error: SMS text too long (max 160)"
+        print 'Error: SMS text too long (max 160)'
         sys.exit(1)
     else:
         mydata['data'] = text
 
+    # Check the quality option
     if (
         quality.lower() is 'n' or quality.lower() is 'h' or
         quality.lower() is 'l' or quality.lower() is 'll'
     ):
         mydata['qty'] = quality
     else:
-        print "Error: wrong SMS quality (choose from n, h, l, ll)"
+        print 'Error: wrong SMS quality (choose from n, h, l, ll)'
         sys.exit(3)
 
+    # Create the POST messagge with header and send it
     payload = urllib.urlencode(mydata)
     req = urllib2.Request(url, payload)
-    req.add_header("Content-type", "application/x-www-form-urlencoded")
+    req.add_header('Content-type', 'application/x-www-form-urlencoded')
     try:
         response = urllib2.urlopen(req)
     except urllib2.URLError, e:
@@ -61,13 +63,14 @@ def sendSmsMobyt(username, password, sender, recipient, text, quality):
         sys.exit(2)
     mobyt_code = response.read()
 
+    # Read Mobyt response
     if str(mobyt_code).find('OK') >= 0:
-        print "SMS sent successfully"
+        print 'SMS sent successfully'
     else:
-        print "Error: Mobyt says " + str(mobyt_code)
+        print 'Error: Mobyt says ' + str(mobyt_code)
 
+# Run as a standalone python script
+if __name__ == '__main__':
 
-if __name__ == "__main__":
-
-    sendSmsMobyt("Mobyt_user", "Mobyt_password", "Sender",
-                 "Rcpt_number", "SMS text", "ll")
+    sendSmsMobyt('Mobyt_user', 'Mobyt_password', 'Sender',
+                 'Rcpt_number', 'SMS text', 'll')
