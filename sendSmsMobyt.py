@@ -52,10 +52,10 @@ quality_dictionary = {
 def checkSender(sender):
     if sender[:1] is '+' and len(sender) > 17:
         print "Error: sender number too long (max lenght 16)"
-        sys.exit(6)
+        sys.exit(1)
     elif len(sender) > 12:
         print "Error: sender name too long (max lenght 11)"
-        sys.exit(7)
+        sys.exit(2)
     else:
         return sender
 
@@ -64,7 +64,7 @@ def checkSmsLenght(text):
     # Check the SMS maximum lenght
     if len(text) > 160:
         print 'Error: SMS text too long (max 160)'
-        sys.exit(1)
+        sys.exit(3)
     else:
         return text
 
@@ -75,15 +75,15 @@ def checkSmsQuality(quality):
         return quality.lower()
     else:
         print 'Error: wrong SMS quality (choose from n, h, l, ll)'
-        sys.exit(2)
+        sys.exit(4)
 
 
 def checkSmsOperation(operation):
-    if str(operation).upper() in operation_dictionary:
-        return str(operation).upper()
+    if operation.upper() in operation_dictionary:
+        return operation.upper()
     else:
         print 'Error: wrong SMS operation'
-        sys.exit(3)
+        sys.exit(5)
 
 
 def getSmsAct():
@@ -185,7 +185,7 @@ def sendSms(username, password, sender, recipient,
         response = urllib2.urlopen(req)
     except urllib2.URLError, e:
         print "Error: can't connect to Mobyt " + str(e.reason)
-        sys.exit(4)
+        sys.exit(6)
 
     # Read Mobyt response
     mobyt_response = response.read()
@@ -197,7 +197,7 @@ def sendSms(username, password, sender, recipient,
         )
     else:
         print 'Error: Mobyt says ' + mobyt_response_string
-        sys.exit(5)
+        sys.exit(7)
 
 # Run as a standalone python script
 if __name__ == '__main__':
