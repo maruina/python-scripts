@@ -7,7 +7,7 @@
 # License GPLv3
 #
 # For the latest script version go to:
-# https://github.com/maruina/python-scripts/blob/master/linux-scripts
+# https://github.com/maruina/python-scripts
 
 # To use it as a module in your script:
 # import sendSmsMobyt
@@ -61,7 +61,7 @@ def checkSender(sender):
 
 
 def checkSmsLenght(text):
-    #Check the SMS maximum lenght
+    # Check the SMS maximum lenght
     if len(text) > 160:
         print 'Error: SMS text too long (max 160)'
         sys.exit(1)
@@ -98,7 +98,7 @@ def getSmsAct():
 def parseArguments():
     parser = argparse.ArgumentParser(description='Send SMS via Mobyt.it')
 
-    #Read the arguments
+    # Read the arguments
     parser.add_argument(
         '-u', '--username', help='Your Mobyt username', required=True
     )
@@ -142,7 +142,7 @@ def parseArguments():
     )
     args = parser.parse_args()
 
-    #Arguments checks
+    # Arguments checks
     checkSender(args.sender)
     checkSmsLenght(args.text)
     checkSmsQuality(args.quality)
