@@ -15,6 +15,7 @@ import datetime
 url = 'http://smsweb.mobyt.it/sms-gw/sendsmart'
 #Dictionary for storing request to Mobyt
 mydata = {}
+#HTTP POST header
 header = {'Content-type': 'application/x-www-form-urlencoded'}
 
 operation_dictionary = {
@@ -68,8 +69,8 @@ def getSmsAct():
     return act
 
 
-def sendSmsMobyt(username, password, sender, recipient,
-                 text, quality, operation):
+def sendSms(username, password, sender, recipient,
+            text, quality, operation):
     """Send a SMS via www.mobyt.it using POST method
 
     Arguments:
@@ -115,5 +116,5 @@ def sendSmsMobyt(username, password, sender, recipient,
 # Run as a standalone python script
 if __name__ == '__main__':
 
-    sendSmsMobyt('Mobyt_user', 'Mobyt_password', 'Sender',
-                 'Rcpt_number', 'SMS text', 'll')
+    sendSms('Mobyt_user', 'Mobyt_password', 'Sender',
+            'Rcpt_number', 'SMS text', 'll')
