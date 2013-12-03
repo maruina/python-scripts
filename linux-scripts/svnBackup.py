@@ -14,8 +14,8 @@ import argparse
 def getTimestamp():
     now = datetime.datetime.now()
     timestamp = (
-        str(now.year) + str(now.month) + str(now.day) + str(now.hour) +
-        str(now.minute) + str(now.second)
+        str(now.year) + str(now.month) + str(now.day) + "-" +
+        str(now.hour) + str(now.minute) + str(now.second)
     )
     return timestamp
 
@@ -29,23 +29,19 @@ def dirVerify(directory):
 
 def svnVerify(repository):
     """Check if repo is a valid SVN repository """
+    ### Return TRUE if dir is a valid SVN repository
+    cmd = "svnadmin " + "verify " + str(repository)
     try:
-        p = (
-            subprocess.Popen(
-                ['svnadmin', 'verify', repository],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
+        p = subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+        out, err = p.communicate()
         if p.returncode == 1:
-            print (
-                "ERROR: %s is not a valid SVN repository."
-                "Removing from list" % repository
-            )
+            print "Error: %s is not a valid SVN repository" % repository
             return False
         elif p.returncode == 0:
-            print "OK: %s is a valid SVN repository" % repository
             return True
-    except subprocess.OSError as e:
+    except subprocess.CalledProcessError as e:
         print "Error: %s" % e
         return False
 
@@ -86,6 +82,7 @@ def svnBackup(repository, dstdir):
     # Create destination folder based on repository name and timestamp
     repository_name = os.path.basename(os.path.normpath(abs_repository))
     bkpdir = abs_dstdir + "/" + repository_name + "-" + timestamp
+
     try:
         os.makedirs(bkpdir)
     except os.error as e:
@@ -94,21 +91,22 @@ def svnBackup(repository, dstdir):
         sys.exit(3)
 
     # Backup the repository
-    p = (
-        subprocess.Popen(
-            ['svnadmin', 'hotcopy', abs_repository, bkpdir],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-    )
-    if p.returncode == 0:
-        print "Backup of %s repository in progress" % repository_name
-    else:
-        print "Error: backup failed"
+    cmd = "svnadmin " + "hotcopy " + str(abs_repository) + " " + str(bkpdir)
 
-    if svnVerify(bkpdir) is True:
-        print "Backup complete"
-    else:
-        print "Error: can not verify the repository backup"
+    try:
+        p = subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, err = p.communicate()
+        if p.returncode == 1:
+            print "Error: backup error"
+            sys.exit(4)
+    except subprocess.CalledProcessError as e:
+        print "Error: %s" % e
+        sys.exit(5)
+
+    if svnVerify(bkpdir):
+        print "Backup completed: repository %s" % repository
 
     return True
 
