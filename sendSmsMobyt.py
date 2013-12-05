@@ -79,8 +79,9 @@ def checkSmsQuality(quality):
 
 
 def checkSmsOperation(operation):
+    """Check the type of operation. At the time only TEXT supported"""
     if operation.upper() in operation_dictionary:
-        return operation.upper()
+        return "TEXT"
     else:
         print 'Error: wrong SMS operation'
         sys.exit(5)
@@ -185,19 +186,20 @@ def sendSms(username, password, sender, recipient,
         response = urllib2.urlopen(req)
     except urllib2.URLError, e:
         print "Error: can't connect to Mobyt " + str(e.reason)
-        sys.exit(6)
+        return False
 
     # Read Mobyt response
     mobyt_response = response.read()
     mobyt_response_string = ''.join(mobyt_response)
     if mobyt_response_string.find('OK') >= 0:
         print (
-            'SMS sent successfully and costed %s credits'
+            '* SMS sent successfully and costed %s credits'
             % mobyt_response_string.replace('OK ', '')
         )
+        return True
     else:
         print 'Error: Mobyt says ' + mobyt_response_string
-        sys.exit(7)
+        return False
 
 # Run as a standalone python script
 if __name__ == '__main__':
@@ -206,5 +208,7 @@ if __name__ == '__main__':
     args = parseArguments()
 
     # Send the SMS
-    sendSms(args.username, args.password, args.sender,
-            args.recipient, args.text, args.quality, args.operation)
+    if sendSms(args.username, args.password, args.sender,
+               args.recipient, args.text, args.quality, args.operation
+               ) is False:
+            sys.exit(1)
