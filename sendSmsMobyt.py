@@ -50,44 +50,46 @@ quality_dictionary = {
 
 
 def checkSender(sender):
+    """"""
     if sender[:1] is '+' and len(sender) > 17:
         print "Error: sender number too long (max lenght 16)"
-        sys.exit(1)
+        return False
     elif len(sender) > 12:
         print "Error: sender name too long (max lenght 11)"
-        sys.exit(2)
+        return False
     else:
-        return sender
+        return True
 
 
 def checkSmsLenght(text):
-    # Check the SMS maximum lenght
+    """Return False is the SMS text doesn't meet Mobyt's requirements."""
     if len(text) > 160:
         print 'Error: SMS text too long (max 160)'
-        sys.exit(3)
+        return False
     else:
-        return text
+        return True
 
 
 def checkSmsQuality(quality):
-    # Check the quality option
-    if quality.lower() in quality_dictionary:
-        return quality.lower()
+    """Return False is the SMS quality doesn't meet Mobyt's requirements."""
+    if quality in quality_dictionary:
+        return True
     else:
         print 'Error: wrong SMS quality (choose from n, h, l, ll)'
-        sys.exit(4)
+        return False
 
 
 def checkSmsOperation(operation):
-    """Check the type of operation. At the time only TEXT supported"""
-    if operation.upper() in operation_dictionary:
-        return "TEXT"
+    """Return False is the SMS operation doesn't meet Mobyt's requirements."""
+    if operation in operation_dictionary:
+        return True
     else:
         print 'Error: wrong SMS operation'
-        sys.exit(5)
+        return False
 
 
 def getSmsAct():
+    """Return a timestamp for the Act field."""
     now = datetime.datetime.now()
     act = (
         str(now.year) + str(now.month) + str(now.day) + str(now.hour) +
@@ -144,10 +146,14 @@ def parseArguments():
     args = parser.parse_args()
 
     # Arguments checks
-    checkSender(args.sender)
-    checkSmsLenght(args.text)
-    checkSmsQuality(args.quality)
-    checkSmsOperation(args.operation)
+    if checkSender(args.sender) is False:
+        sys.exit(2)
+    if checkSmsLenght(args.text) is False:
+        sys.exit(3)
+    if checkSmsQuality(args.quality) is False:
+        sys.exit(4)
+    if checkSmsOperation(args.operation) is False:
+        sys.exit(5)
 
     return args
 
@@ -169,15 +175,26 @@ def sendSms(username, password, sender, recipient,
                 MULTI (multiple SMS interpreted as one SMS), OLGO (SMS is a
                 Nokia operator logo), GLGO (SMS is a Nokia group logo), RING
                 (SMS is a ringtone), 8BIT (SMS is 8 bit)
+
+    Return True is everything is fine.
     """
     mydata['id'] = username
     mydata['password'] = password
     mydata['from'] = sender
     mydata['rcpt'] = recipient
-    mydata['operation'] = checkSmsOperation(operation)
+    if checkSmsOperation(operation) is True:
+        mydata['operation'] = operation
+    else:
+        return False
     mydata['act'] = getSmsAct()
-    mydata['data'] = checkSmsLenght(text)
-    mydata['qty'] = checkSmsQuality(quality)
+    if checkSmsLenght(text) is True:
+        mydata['data'] = text
+    else:
+        return False
+    if checkSmsQuality(quality) is True:
+        mydata['qty'] = quality
+    else:
+        return False
 
     # Create the POST messagge and send it
     payload = urllib.urlencode(mydata)
