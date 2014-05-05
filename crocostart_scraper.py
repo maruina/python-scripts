@@ -46,6 +46,7 @@ def parse_crocostar():
                 print 'Scraping {} ...'.format(star_url)
                 star_req = urllib2.urlopen(star_url)
                 star_soup = BeautifulSoup(star_req)
+                counter = 0
                 for star_div in star_soup.findAll('ul', {'class': 'profile-photos wrap'}):
                     for album in star_div.findAll('a'):
                         album_name = str(album['href']).replace('http://crocostars.com/', '').split('/')[1:-1]
@@ -54,9 +55,12 @@ def parse_crocostar():
                         images_soup = BeautifulSoup(images_req)
                         for images_div in images_soup.findAll('ul', {'class': 'gals-list'}):
                             for images in images_div.findAll('a'):
+                                if counter > 10:
+                                    break
                                 image_url = 'http://img.crocostars.com/' + star_name + \
                                     '/' + '/'.join(album_name) + '/' + str(images['href']).replace('html', 'jpg')
                                 get_image(image_url, uuid.uuid4())
+                                counter += 1
                 os.chdir(os.path.join(basedir, 'scraper'))
                 print 'Done\n'
 
