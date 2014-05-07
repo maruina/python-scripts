@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import urllib2
-import os, sys
+import os
+import sys
 import uuid
 import requests
 import time
@@ -49,11 +50,11 @@ def parse_crocostar():
         # For every actress
         for actress in div.find_all('h4'):
             star_name = str(actress.text).replace(' ', '-').lower()
-            if not os.path.exists(star_name):
-                os.mkdir(star_name)
-            else:
+            if os.path.exists(star_name):
                 print 'Actress {} already exists, skip'.format(actress.text)
                 continue
+            else:
+                os.mkdir(star_name)
             os.chdir(star_name)
             star_url = 'http://' + star_name + ".crocostars.com"
             print 'Scraping {} ...'.format(star_url)
