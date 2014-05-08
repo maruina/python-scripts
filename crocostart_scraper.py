@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import urllib2
 import os
 import sys
 import uuid
@@ -20,10 +19,14 @@ timer = time.clock if sys.platform[:3] == 'win' else time.time
 
 
 def get_image(img_url, file_name):
-    r = requests.get(img_url)
-    with open(str(file_name) + '.jpg', 'wb') as f:
-        for chunk in r.iter_content(4096):
-            f.write(chunk)
+    try:
+        r = requests.get(img_url)
+        with open(str(file_name) + '.jpg', 'wb') as f:
+            for chunk in r.iter_content(4096):
+                f.write(chunk)
+    except requests.RequestException:
+        print "Network problem while downloading {}".format(img_url)
+        pass
 
 
 def parse_crocostar():
@@ -42,8 +45,12 @@ def parse_crocostar():
         else:
             current_url = main_url + str(x) + '.html'
 
-        req = urllib2.urlopen(current_url)
-        soup = BeautifulSoup(req)
+        try:
+            req = requests.get(current_url)
+        except requests.RequestException:
+            print "Network problem while opening {}".format(current_url)
+            continue
+        soup = BeautifulSoup(req.text)
 
         # Find the HTML code with the list of all the actress
         div = soup.find('ul', {'class': 'profile-photos wrap'})
@@ -58,8 +65,12 @@ def parse_crocostar():
             os.chdir(star_name)
             star_url = 'http://' + star_name + ".crocostars.com"
             print 'Scraping {} ...'.format(star_url)
-            star_req = urllib2.urlopen(star_url)
-            star_soup = BeautifulSoup(star_req)
+            try:
+                star_req = requests.get(star_url)
+            except requests.RequestException:
+                print "Network problem while opening {}".format(star_url)
+                continue
+            star_soup = BeautifulSoup(star_req.text)
             # Find the HTML code with the list of all the actress' album
             albums_div = star_soup.find('ul', {'class': 'profile-photos wrap'})
             for album_counter, album in enumerate(albums_div.find_all('a')):
@@ -69,8 +80,12 @@ def parse_crocostar():
                     print 'Scraping album {}'.format(album_counter)
                     album_name = str(album['href']).replace('http://crocostars.com/', '').split('/')[1:-1]
                     album_url = 'http://crocostars.com/' + star_name + '/' + '/'.join(album_name)
-                    images_req = urllib2.urlopen(album_url)
-                    images_soup = BeautifulSoup(images_req)
+                    try:
+                        images_req = requests.get(album_url)
+                    except requests.RequestException:
+                        print "Network problem while opening {}".format(album_url)
+                        continue
+                    images_soup = BeautifulSoup(images_req.text)
                     # Find the HTML code with the list of all the images in the current album
                     images_div = images_soup.find('ul', {'class': 'gals-list'})
                     for image_counter, image in enumerate(images_div.find_all('a')):
